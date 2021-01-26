@@ -50,16 +50,12 @@ jobs:
     - name: When Multi-core compile failure will be rollback to Single core compile
       run: |
         echo -e "$(nproc) thread compile"
-        sudo df -h
         make -j$(nproc) || make -j1 V=s
         sudo df -h
         cd bin/targets/*/*
         zip -r -o -q -9 mt7621.zip . -i *
-        git clone https://github.com/tmr-github/OpenWrt_ActionTest.git
-        mv -f mt7621.zip OpenWrt_ActionTest/mt7621.zip
-        cd OpenWrt_ActionTest
-        git config --local user.email "tmr-mail@qq.com"
-        git config --local user.name "OpenWrt_ActionTest"
-        git add .
-        git commit -m "Action Built" -a
-        git push https://${{ secrets.ACCESS_TOKEN }}@github.com/tmr-github/OpenWrt_ActionTest.git
+        curl \
+        -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
+        -H "Content-Type: $(file -b --mime-type mt7621.zip)" \
+        --data-binary @mt7621.zip \
+        "https://uploads.github.com/repos/tmr-github/OpenWrt_ActionTest/releases/36864904/assets?name=$(basename mt7621.zip)"
